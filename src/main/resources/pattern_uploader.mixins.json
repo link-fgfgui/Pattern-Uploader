@@ -1,0 +1,21 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "io.github.linkfgfgui.pattern_uploader.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "plugin": "io.github.linkfgfgui.pattern_uploader.mixin.PatternUploaderMixinPlugin",
+  "mixins": [
+    "EncodedPatternItemMixin",
+    "PatternEncodingTermMenuMixin",
+    "emi.EmiRecipeFillerMixin"
+  ],
+  "client": [
+    "PatternEncodingTermScreenMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "overwrites": {
+    "requireAnnotations": true
+  }
+}
