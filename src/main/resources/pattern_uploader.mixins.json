@@ -10,7 +10,6 @@
     "emi.EmiRecipeFillerMixin"
   ],
   "client": [
-    "PatternEncodingTermScreenMixin"
   ],
   "injectors": {
     "defaultRequire": 1
