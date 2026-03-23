@@ -19,6 +19,7 @@ repositories {
         name = "BlameJared Maven"
         url = "https://maven.blamejared.com/"
     }
+    maven { url "https://maven.shedaniel.me/" }
 }
 
 base {
@@ -107,11 +108,11 @@ sourceSets.main.resources { srcDir 'src/generated/resources' }
 dependencies {
     compileOnly "dev.emi:emi-neoforge:${emi_version}"
     compileOnly "mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}"
+    compileOnly "me.shedaniel:RoughlyEnoughItems-neoforge:${rei_version}"
     implementation "org.appliedenergistics:appliedenergistics2:${ae2_version}"
-    implementation "dev.emi:emi-neoforge:${emi_version}"
 
-    runtimeOnly "dev.emi:emi-neoforge:${emi_version}"
-//    runtimeOnly "mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}"
+//    runtimeOnly "dev.emi:emi-neoforge:${emi_version}"
+    runtimeOnly "mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}"
 }
 
 // This block of code expands all declared replace properties in the specified resource targets.

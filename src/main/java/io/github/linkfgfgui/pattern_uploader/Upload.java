@@ -7,7 +7,7 @@ import appeng.api.networking.IGridNode;
 import appeng.helpers.patternprovider.PatternProviderLogicHost;
 import appeng.menu.me.items.PatternEncodingTermMenu;
 import com.mojang.logging.LogUtils;
-import io.github.linkfgfgui.pattern_uploader.utils.RecipeFinderUtilEMI;
+import io.github.linkfgfgui.pattern_uploader.utils.RecipeFinderUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -28,6 +28,7 @@ import java.util.*;
 import static io.github.linkfgfgui.pattern_uploader.PatternUploader.recipeIdString;
 
 public class Upload {
+    public static RecipeFinderUtil recipeFinderUtil = RecipeFinderUtil.getApi();
     static Logger LOGGER = LogUtils.getLogger();
     static Map<ResourceLocation, Set<PatternProviderLogicHost>> workstation2ProvidersMap;
     static Map<ResourceLocation, Set<PatternProviderLogicHost>> recipe2ProvidersMap;
@@ -64,7 +65,7 @@ public class Upload {
             for (ItemStack pattern : patterns) {
                 CustomData customData = pattern.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY);
                 CompoundTag tag = customData.copyTag();
-                ResourceLocation location = RecipeFinderUtilEMI.getRecipeCategoryIdByRecipeId(tag.getString(recipeIdString));
+                ResourceLocation location = recipeFinderUtil.getRecipeCategoryIdByRecipeId(tag.getString(recipeIdString));
                 if (location != null) {
                     addToRecipeMap(location, host);
                     break;
@@ -91,15 +92,14 @@ public class Upload {
         Item pattern = Item.byId(BuiltInRegistries.ITEM.getId(ResourceLocation.fromNamespaceAndPath("ae2", "processing_pattern")));
         for (int index = 0; index < inventory.items.size(); index++) {
             ItemStack is = inventory.getItem(index);
-            if (is.is(pattern)) {
-                PatternDetailsHelper.isEncodedPattern(is);
+            if (PatternDetailsHelper.isEncodedPattern(is) && is.is(pattern)) {
                 var customData = is.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY);
                 var tag = customData.copyTag();
                 if (tag.contains(recipeIdString)) {
-                    if (tryInsert(recipe2ProvidersMap.get(RecipeFinderUtilEMI.getRecipeCategoryIdByRecipeId(tag.getString(recipeIdString))), is, inventory, index)) {
+                    if (tryInsert(recipe2ProvidersMap.get(recipeFinderUtil.getRecipeCategoryIdByRecipeId(tag.getString(recipeIdString))), is, inventory, index)) {
                         continue;
                     }
-                    @Nullable List<ResourceLocation> locations = RecipeFinderUtilEMI.getWorkstationIdsByRecipeId(tag.getString(recipeIdString));
+                    @Nullable List<ResourceLocation> locations = recipeFinderUtil.getWorkstationIdsByRecipeId(tag.getString(recipeIdString));
                     if (locations != null) {
                         for (ResourceLocation location : locations) {
                             if (is.isEmpty()) break;

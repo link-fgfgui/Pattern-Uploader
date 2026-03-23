@@ -3,7 +3,6 @@ package io.github.linkfgfgui.pattern_uploader.utils;
 import appeng.api.crafting.IPatternDetails;
 import appeng.api.crafting.PatternDetailsHelper;
 import appeng.api.stacks.GenericStack;
-import com.mojang.logging.LogUtils;
 import dev.emi.emi.api.EmiApi;
 import dev.emi.emi.api.recipe.EmiRecipe;
 import dev.emi.emi.api.recipe.EmiRecipeManager;
@@ -14,29 +13,25 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
-import org.slf4j.Logger;
 
 import java.util.List;
 
-/**
- * 基于 EMI 查找配方
- */
-public final class RecipeFinderUtilEMI {
-    private static final Logger LOGGER = LogUtils.getLogger();
-    public static EmiRecipeManager manager = EmiApi.getRecipeManager();
+public final class RecipeFinderUtilEMI implements RecipeFinderUtil {
+
+    public EmiRecipeManager manager = EmiApi.getRecipeManager();
 
     @Nullable
-    public static EmiRecipe findRecipeById(ResourceLocation location) {
+    public EmiRecipe findRecipeById(ResourceLocation location) {
         return manager.getRecipe(location);
     }
 
     @Nullable
-    public static EmiRecipe findRecipeById(String id) {
+    public EmiRecipe findRecipeById(String id) {
         return findRecipeById(ResourceLocation.parse(id));
     }
 
-    @Nullable
-    public static ResourceLocation getRecipeCategoryIdByRecipeId(ResourceLocation id) {
+    @Override
+    public @Nullable ResourceLocation getRecipeCategoryIdByRecipeId(ResourceLocation id) {
         EmiRecipe recipe = findRecipeById(id);
         if (recipe != null) {
             return recipe.getCategory().getId();
@@ -45,13 +40,8 @@ public final class RecipeFinderUtilEMI {
     }
 
     @Nullable
-    public static ResourceLocation getRecipeCategoryIdByRecipeId(String id) {
-        return getRecipeCategoryIdByRecipeId(ResourceLocation.tryParse(id));
-    }
-
-    @Nullable
-    public static List<EmiStack> getWorkstationStacksByRecipeId(String id) {
-        EmiRecipe recipe = RecipeFinderUtilEMI.findRecipeById(id);
+    public List<EmiStack> getWorkstationStacksByRecipeId(String id) {
+        EmiRecipe recipe = findRecipeById(id);
         if (recipe != null) {
             List<EmiIngredient> workstations = EmiApi.getRecipeManager().getWorkstations(recipe.getCategory());
             if (!workstations.isEmpty()) {
@@ -61,27 +51,27 @@ public final class RecipeFinderUtilEMI {
         return null;
     }
 
-    @Nullable
-    public static List<ResourceLocation> getWorkstationIdsByRecipeId(String id) {
-        List<EmiStack> workstations = RecipeFinderUtilEMI.getWorkstationStacksByRecipeId(id);
+    @Override
+    public @Nullable List<ResourceLocation> getWorkstationIdsByRecipeId(String id) {
+        List<EmiStack> workstations = getWorkstationStacksByRecipeId(id);
         if (workstations != null) {
             return workstations.stream().map(EmiStack::getId).toList();
         }
         return null;
     }
 
-    @Nullable
-    public static Component getWorkstationComponentByRecipeId(String id) {
-        List<EmiStack> workstations = RecipeFinderUtilEMI.getWorkstationStacksByRecipeId(id);
+    @Override
+    public @Nullable Component getWorkstationComponentByRecipeId(String id) {
+        List<EmiStack> workstations = getWorkstationStacksByRecipeId(id);
         if (workstations != null) {
             return workstations.getFirst().getName();
         }
         return null;
     }
 
-    public static boolean isRecipeEqualToPattern(ItemStack itemStack, ResourceLocation location, Level level) {
+    @Override
+    public boolean isRecipeEqualToPattern(ItemStack itemStack, ResourceLocation location, Level level) {
         EmiRecipe recipe = findRecipeById(location);
-        // 检查样板与配方是否对应
         IPatternDetails pattern = PatternDetailsHelper.decodePattern(itemStack, level);
         if (pattern != null) {
             List<GenericStack> stacks = pattern.getOutputs();
@@ -94,6 +84,12 @@ public final class RecipeFinderUtilEMI {
                 return ids1.equals(ids2);
             }
         }
+        return false;
+    }
+
+    // it will never be called if you override the former.
+    @Override
+    public boolean isRecipeEqualToPattern(@Nullable IPatternDetails pattern, ResourceLocation location) {
         return false;
     }
 }

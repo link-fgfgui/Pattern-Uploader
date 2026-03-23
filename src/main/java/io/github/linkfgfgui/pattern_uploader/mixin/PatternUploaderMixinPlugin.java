@@ -28,7 +28,7 @@ public class PatternUploaderMixinPlugin implements IMixinConfigPlugin {
 
     @Override
     public boolean shouldApplyMixin(String targetClassName, String mixinClassName) {
-        if (!isJeiPresent()) {
+        if (!isJeiPresent() || isEmiPresent()) {
             return !mixinClassName.startsWith("io.github.linkfgfgui.pattern_uploader.mixin.jei");
         }
         if (!isEmiPresent()) {
