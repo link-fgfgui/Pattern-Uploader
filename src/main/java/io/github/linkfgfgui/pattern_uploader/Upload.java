@@ -87,7 +87,7 @@ public class Upload {
                 });
             }
         }
-
+        List<? extends String> blacklist = Config.BLACKLISTED_RECIPE_CATEGORIES.get();
         Inventory inventory = player.getInventory();
         Item pattern = Item.byId(BuiltInRegistries.ITEM.getId(ResourceLocation.fromNamespaceAndPath("ae2", "processing_pattern")));
         for (int index = 0; index < inventory.items.size(); index++) {
@@ -96,7 +96,9 @@ public class Upload {
                 var customData = is.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY);
                 var tag = customData.copyTag();
                 if (tag.contains(recipeIdString)) {
-                    if (tryInsert(recipe2ProvidersMap.get(recipeFinderUtil.getRecipeCategoryIdByRecipeId(tag.getString(recipeIdString))), is, inventory, index)) {
+                    ResourceLocation categoryId = recipeFinderUtil.getRecipeCategoryIdByRecipeId(tag.getString(recipeIdString));
+                    if (categoryId != null && blacklist.contains(categoryId.toString())) continue;
+                    if (tryInsert(recipe2ProvidersMap.get(categoryId), is, inventory, index)) {
                         continue;
                     }
                     @Nullable List<ResourceLocation> locations = recipeFinderUtil.getWorkstationIdsByRecipeId(tag.getString(recipeIdString));

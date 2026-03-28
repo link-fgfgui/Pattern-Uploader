@@ -19,7 +19,6 @@ public class PatternUploader {
 
     public PatternUploader(IEventBus modEventBus, ModContainer modContainer) {
         modEventBus.addListener(this::registerPayloadHandlers);
-        modEventBus.addListener(Config::onLoad);
         modContainer.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
     }
 

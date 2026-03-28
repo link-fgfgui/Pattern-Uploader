@@ -111,7 +111,7 @@ dependencies {
     compileOnly "me.shedaniel:RoughlyEnoughItems-neoforge:${rei_version}"
     implementation "org.appliedenergistics:appliedenergistics2:${ae2_version}"
 
-//    runtimeOnly "dev.emi:emi-neoforge:${emi_version}"
+    runtimeOnly "dev.emi:emi-neoforge:${emi_version}"
     runtimeOnly "mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}"
 }
 

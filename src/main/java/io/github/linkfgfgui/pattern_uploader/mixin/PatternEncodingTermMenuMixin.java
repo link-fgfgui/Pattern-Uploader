@@ -2,6 +2,7 @@ package io.github.linkfgfgui.pattern_uploader.mixin;
 
 import appeng.menu.AEBaseMenu;
 import appeng.menu.me.items.PatternEncodingTermMenu;
+import io.github.linkfgfgui.pattern_uploader.Config;
 import io.github.linkfgfgui.pattern_uploader.network.IPatternEncodingIdSync;
 import io.github.linkfgfgui.pattern_uploader.network.UploadInventoryPatternsToProvidersC2SPacket;
 import net.minecraft.client.gui.screens.Screen;
@@ -47,7 +48,7 @@ public abstract class PatternEncodingTermMenuMixin implements IPatternEncodingId
         if (itemStack != null && !itemStack.isEmpty()) {
             CustomData.update(DataComponents.CUSTOM_DATA, itemStack, tag -> {
                 if (this.eap$pendingRecipeIdUpload != null) {
-                    if (recipeFinderUtil.isRecipeEqualToPattern(itemStack, this.eap$pendingRecipeIdUpload, ((AEBaseMenu) (Object) this).getPlayer().level())) {
+                    if (!Config.IS_CHECK_PATTERN_OUTPUT.getAsBoolean() || recipeFinderUtil.isRecipeEqualToPattern(itemStack, this.eap$pendingRecipeIdUpload, ((AEBaseMenu) (Object) this).getPlayer().level())) {
                         tag.putString(recipeIdString, this.eap$pendingRecipeIdUpload.toString());
                     }
                     this.eap$pendingRecipeIdUpload = null;
