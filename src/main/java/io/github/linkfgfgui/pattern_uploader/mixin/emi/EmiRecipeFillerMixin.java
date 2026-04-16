@@ -18,7 +18,9 @@ public class EmiRecipeFillerMixin {
     @Inject(method = "performFill", at = @At("RETURN"), remap = false)
     private static <T extends AbstractContainerMenu> void onPerformFill(EmiRecipe recipe, AbstractContainerScreen<T> screen, EmiCraftContext.Type type, EmiCraftContext.Destination destination, int amount, CallbackInfoReturnable<Boolean> cir) {
         if (screen instanceof PatternEncodingTermScreen) {
-            PacketDistributor.sendToServer(new EncodeWithRecipeIdC2SPacket(recipe.getId()));
+            if (recipe.getId() != null) {
+                PacketDistributor.sendToServer(new EncodeWithRecipeIdC2SPacket(recipe.getId()));
+            }
         }
     }
 }
