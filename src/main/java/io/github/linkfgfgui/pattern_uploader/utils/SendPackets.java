@@ -5,6 +5,7 @@ import io.github.linkfgfgui.pattern_uploader.network.UploadCategoryWorkstationsC
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.network.PacketDistributor;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class SendPackets {
@@ -13,7 +14,8 @@ public class SendPackets {
         PacketDistributor.sendToServer(new EncodeWithCategoryIdC2SPacket(categoryId));
         List<ResourceLocation> workstationIds = RecipeFinderUtil.INSTANCE.get().getWorkstationIdsByCategoryId(categoryId);
         if (workstationIds == null) return;
-        workstationIds.addFirst(categoryId);
-        PacketDistributor.sendToServer(new UploadCategoryWorkstationsC2SPacket(workstationIds));
+        List<ResourceLocation> mutableList = new ArrayList<>(workstationIds);
+        mutableList.addFirst(categoryId);
+        PacketDistributor.sendToServer(new UploadCategoryWorkstationsC2SPacket(mutableList));
     }
 }

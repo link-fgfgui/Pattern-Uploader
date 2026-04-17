@@ -5,12 +5,13 @@
   "compatibilityLevel": "JAVA_21",
   "plugin": "io.github.linkfgfgui.pattern_uploader.mixin.PatternUploaderMixinPlugin",
   "mixins": [
-    "EncodedPatternItemMixin",
-    "PatternEncodingTermMenuMixin",
-    "emi.EmiRecipeFillerMixin",
-    "jei.RecipeTransferUtilMixin"
+    "PatternEncodingTermMenuMixin"
   ],
   "client": [
+    "EncodedPatternItemMixin",
+    "PatternEncodingTermMenuClientMixin",
+    "emi.EmiRecipeFillerMixin",
+    "jei.RecipeTransferUtilMixin"
   ],
   "injectors": {
     "defaultRequire": 1

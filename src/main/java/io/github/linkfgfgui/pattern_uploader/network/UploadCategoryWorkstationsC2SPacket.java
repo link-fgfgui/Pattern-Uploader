@@ -10,7 +10,6 @@ import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static io.github.linkfgfgui.pattern_uploader.PatternUploader.MODID;
 
@@ -29,7 +28,7 @@ public record UploadCategoryWorkstationsC2SPacket(List<ResourceLocation> ids) im
                 return;
             }
             List<ResourceLocation> ids = msg.ids();
-            Upload.addToCateStationMap(ids.getFirst(), ids.stream().skip(1).collect(Collectors.toSet()));
+            Upload.addToCateStationMap(ids.getFirst(), ids.stream().skip(1).toList());
         });
     }
 

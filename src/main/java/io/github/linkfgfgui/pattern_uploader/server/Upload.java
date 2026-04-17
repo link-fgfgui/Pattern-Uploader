@@ -31,7 +31,7 @@ public class Upload {
     static Logger LOGGER = LogUtils.getLogger();
     static Map<ResourceLocation, Set<PatternProviderLogicHost>> workstation2ProvidersMap;
     static Map<ResourceLocation, Set<PatternProviderLogicHost>> category2ProvidersMap;
-    static Map<ResourceLocation, Set<ResourceLocation>> category2workstationsMap = new HashMap<>();
+    static Map<ResourceLocation, List<ResourceLocation>> category2workstationsMap = new HashMap<>();
 
     public static void addToWorkstationMap(ResourceLocation workstation, PatternProviderLogicHost host) {
         workstation2ProvidersMap.computeIfAbsent(workstation, key -> new HashSet<>()).add(host);
@@ -41,7 +41,7 @@ public class Upload {
         category2ProvidersMap.computeIfAbsent(recipe, key -> new HashSet<>()).add(host);
     }
 
-    public static void addToCateStationMap(ResourceLocation category, Set<ResourceLocation> ids) {
+    public static void addToCateStationMap(ResourceLocation category, List<ResourceLocation> ids) {
         category2workstationsMap.computeIfAbsent(category, key -> ids);
     }
 
@@ -92,6 +92,7 @@ public class Upload {
         List<? extends String> blacklist = Config.BLACKLISTED_RECIPE_CATEGORIES.get();
         Inventory inventory = player.getInventory();
         Item pattern = Item.byId(BuiltInRegistries.ITEM.getId(ResourceLocation.fromNamespaceAndPath("ae2", "processing_pattern")));
+        int count = 0;
         for (int index = 0; index < inventory.items.size(); index++) {
             ItemStack is = inventory.getItem(index);
             if (PatternDetailsHelper.isEncodedPattern(is) && is.is(pattern)) {
@@ -102,7 +103,7 @@ public class Upload {
                     if (categoryId == null) continue;
                     if (blacklist.contains(categoryId.toString())) continue;
                     if (tryInsert(category2ProvidersMap.get(categoryId), is, inventory, index)) continue;
-                    @Nullable Set<ResourceLocation> locations = category2workstationsMap.get(ResourceLocation.tryParse(tag.getString(recipeIdString)));
+                    @Nullable List<ResourceLocation> locations = category2workstationsMap.get(ResourceLocation.tryParse(tag.getString(recipeIdString)));
                     if (locations != null) {
                         for (ResourceLocation location : locations) {
                             if (is.isEmpty()) break;
@@ -113,9 +114,10 @@ public class Upload {
                         }
                     }
                 }
-                LOGGER.info("A Pattern Actioned");
+                count++;
             }
         }
+        LOGGER.info("{} Pattern{} Actioned", count, count == 1 ? "" : "s");
     }
 
     static boolean tryInsert(@Nullable Set<PatternProviderLogicHost> hosts, ItemStack is, Inventory inventory, int index) {
