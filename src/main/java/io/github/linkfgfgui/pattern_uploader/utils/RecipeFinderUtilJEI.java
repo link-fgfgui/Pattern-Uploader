@@ -1,9 +1,5 @@
 package io.github.linkfgfgui.pattern_uploader.utils;
 
-import appeng.api.crafting.IPatternDetails;
-import appeng.api.crafting.PatternDetailsHelper;
-import appeng.api.stacks.AEItemKey;
-import appeng.api.stacks.GenericStack;
 import io.github.linkfgfgui.pattern_uploader.PatternUploader;
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
@@ -11,17 +7,14 @@ import mezz.jei.api.recipe.IRecipeManager;
 import mezz.jei.api.recipe.RecipeType;
 import mezz.jei.api.runtime.IJeiRuntime;
 import net.minecraft.client.Minecraft;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeManager;
-import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -113,34 +106,6 @@ public final class RecipeFinderUtilJEI implements RecipeFinderUtil, IModPlugin {
             return Component.translatable(workstation.getFirst().getItem().getDescriptionId());
         }
         return null;
-    }
-
-    // TODO: fix mek
-    @Override
-    public boolean isRecipeEqualToPattern(ItemStack itemStack, ResourceLocation location, Level level) {
-        Recipe<?> recipe = findRecipeById(location);
-        IPatternDetails pattern = PatternDetailsHelper.decodePattern(itemStack, level);
-        HolderLookup.Provider registries = level.registryAccess();
-        if (pattern != null) {
-            List<GenericStack> stacks = pattern.getOutputs();
-            if (stacks != null && recipe != null) {
-                GenericStack primaryOutput = pattern.getPrimaryOutput();
-                if (primaryOutput != null) {
-                    if (primaryOutput.what() instanceof AEItemKey aeItemKey) {
-                        Item patternItem = aeItemKey.getItem();
-                        Item recipeItem = recipe.getResultItem(registries).getItem();
-                        return patternItem.equals(recipeItem);
-                    }
-                }
-                return false;
-            }
-        }
-        return false;
-    }
-
-    @Override
-    public boolean isRecipeEqualToPattern(@Nullable IPatternDetails pattern, ResourceLocation location) {
-        return false;
     }
 
     @Override
