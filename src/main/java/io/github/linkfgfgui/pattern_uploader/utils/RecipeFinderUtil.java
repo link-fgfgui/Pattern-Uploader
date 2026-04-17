@@ -22,15 +22,9 @@ public interface RecipeFinderUtil {
         }
     }
 
-    default @Nullable ResourceLocation getRecipeCategoryIdByRecipeId(String id) {
-        return getRecipeCategoryIdByRecipeId(ResourceLocation.tryParse(id));
-    }
+    @Nullable List<ResourceLocation> getWorkstationIdsByCategoryId(ResourceLocation id);
 
-    @Nullable ResourceLocation getRecipeCategoryIdByRecipeId(ResourceLocation id);
-
-    @Nullable List<ResourceLocation> getWorkstationIdsByRecipeId(String id);
-
-    @Nullable Component getWorkstationComponentByRecipeId(String id);
+    @Nullable Component getWorkstationComponentByCategoryId(String id);
 
     default boolean isRecipeEqualToPattern(ItemStack itemStack, ResourceLocation location, Level level) {
         IPatternDetails pattern = PatternDetailsHelper.decodePattern(itemStack, level);
@@ -50,6 +44,17 @@ public interface RecipeFinderUtil {
             } else if (list.isLoaded("jei")) {
                 JEI = true;
             }
+        }
+    }
+
+    class INSTANCE {
+        static RecipeFinderUtil api = null;
+
+        public static RecipeFinderUtil get() {
+            if (api == null) {
+                api = getApi();
+            }
+            return api;
         }
     }
 }

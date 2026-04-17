@@ -1,4 +1,4 @@
-package io.github.linkfgfgui.pattern_uploader;
+package io.github.linkfgfgui.pattern_uploader.server;
 
 import appeng.api.crafting.PatternDetailsHelper;
 import appeng.api.inventories.InternalInventory;
@@ -7,7 +7,7 @@ import appeng.api.networking.IGridNode;
 import appeng.helpers.patternprovider.PatternProviderLogicHost;
 import appeng.menu.me.items.PatternEncodingTermMenu;
 import com.mojang.logging.LogUtils;
-import io.github.linkfgfgui.pattern_uploader.utils.RecipeFinderUtil;
+import io.github.linkfgfgui.pattern_uploader.Config;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -28,17 +28,21 @@ import java.util.*;
 import static io.github.linkfgfgui.pattern_uploader.PatternUploader.recipeIdString;
 
 public class Upload {
-    public static RecipeFinderUtil recipeFinderUtil = RecipeFinderUtil.getApi();
     static Logger LOGGER = LogUtils.getLogger();
     static Map<ResourceLocation, Set<PatternProviderLogicHost>> workstation2ProvidersMap;
-    static Map<ResourceLocation, Set<PatternProviderLogicHost>> recipe2ProvidersMap;
-
-    public static void addToRecipeMap(ResourceLocation recipe, PatternProviderLogicHost host) {
-        recipe2ProvidersMap.computeIfAbsent(recipe, key -> new HashSet<>()).add(host);
-    }
+    static Map<ResourceLocation, Set<PatternProviderLogicHost>> category2ProvidersMap;
+    static Map<ResourceLocation, Set<ResourceLocation>> category2workstationsMap = new HashMap<>();
 
     public static void addToWorkstationMap(ResourceLocation workstation, PatternProviderLogicHost host) {
         workstation2ProvidersMap.computeIfAbsent(workstation, key -> new HashSet<>()).add(host);
+    }
+
+    public static void addToCategoryMap(ResourceLocation recipe, PatternProviderLogicHost host) {
+        category2ProvidersMap.computeIfAbsent(recipe, key -> new HashSet<>()).add(host);
+    }
+
+    public static void addToCateStationMap(ResourceLocation category, Set<ResourceLocation> ids) {
+        category2workstationsMap.computeIfAbsent(category, key -> ids);
     }
 
     public static void upload(ServerPlayer player) {
@@ -49,7 +53,7 @@ public class Upload {
         if (node == null) {
             return;
         }
-        recipe2ProvidersMap = new HashMap<>();
+        category2ProvidersMap = new HashMap<>();
         workstation2ProvidersMap = new HashMap<>();
         IGrid grid = node.getGrid();
         Set<PatternProviderLogicHost> hosts = new HashSet<>();
@@ -59,22 +63,20 @@ public class Upload {
             }
         });
         for (PatternProviderLogicHost host : hosts) {
-
-            long s1 = recipe2ProvidersMap.size();
+            long s1 = category2ProvidersMap.size();
             InternalInventory patterns = host.getLogic().getPatternInv();
             for (ItemStack pattern : patterns) {
                 CustomData customData = pattern.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY);
                 CompoundTag tag = customData.copyTag();
-                ResourceLocation location = recipeFinderUtil.getRecipeCategoryIdByRecipeId(tag.getString(recipeIdString));
+                ResourceLocation location = ResourceLocation.tryParse(tag.getString(recipeIdString));
                 if (location != null) {
-                    addToRecipeMap(location, host);
+                    addToCategoryMap(location, host);
                     break;
                 }
             }
-            if (recipe2ProvidersMap.size() > s1) {
+            if (category2ProvidersMap.size() > s1) {
                 continue;
             }
-
             Level level = host.getBlockEntity().getLevel();
             BlockPos pos = host.getBlockEntity().getBlockPos();
             if (level != null) {
@@ -96,12 +98,11 @@ public class Upload {
                 var customData = is.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY);
                 var tag = customData.copyTag();
                 if (tag.contains(recipeIdString)) {
-                    ResourceLocation categoryId = recipeFinderUtil.getRecipeCategoryIdByRecipeId(tag.getString(recipeIdString));
-                    if (categoryId != null && blacklist.contains(categoryId.toString())) continue;
-                    if (tryInsert(recipe2ProvidersMap.get(categoryId), is, inventory, index)) {
-                        continue;
-                    }
-                    @Nullable List<ResourceLocation> locations = recipeFinderUtil.getWorkstationIdsByRecipeId(tag.getString(recipeIdString));
+                    ResourceLocation categoryId = ResourceLocation.tryParse(tag.getString(recipeIdString));
+                    if (categoryId == null) continue;
+                    if (blacklist.contains(categoryId.toString())) continue;
+                    if (tryInsert(category2ProvidersMap.get(categoryId), is, inventory, index)) continue;
+                    @Nullable Set<ResourceLocation> locations = category2workstationsMap.get(ResourceLocation.tryParse(tag.getString(recipeIdString)));
                     if (locations != null) {
                         for (ResourceLocation location : locations) {
                             if (is.isEmpty()) break;
@@ -129,5 +130,4 @@ public class Upload {
         }
         return false;
     }
-
 }

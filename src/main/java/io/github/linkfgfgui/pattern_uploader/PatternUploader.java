@@ -1,7 +1,8 @@
 package io.github.linkfgfgui.pattern_uploader;
 
 import com.mojang.logging.LogUtils;
-import io.github.linkfgfgui.pattern_uploader.network.EncodeWithRecipeIdC2SPacket;
+import io.github.linkfgfgui.pattern_uploader.network.EncodeWithCategoryIdC2SPacket;
+import io.github.linkfgfgui.pattern_uploader.network.UploadCategoryWorkstationsC2SPacket;
 import io.github.linkfgfgui.pattern_uploader.network.UploadInventoryPatternsToProvidersC2SPacket;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
@@ -14,7 +15,7 @@ import org.slf4j.Logger;
 @Mod(PatternUploader.MODID)
 public class PatternUploader {
     public static final String MODID = "pattern_uploader";
-    public static final String recipeIdString = "recipeId";
+    public static final String recipeIdString = "categoryId";
     private static final Logger LOGGER = LogUtils.getLogger();
 
     public PatternUploader(IEventBus modEventBus, ModContainer modContainer) {
@@ -24,7 +25,8 @@ public class PatternUploader {
 
     private void registerPayloadHandlers(final RegisterPayloadHandlersEvent event) {
         PayloadRegistrar registrar = event.registrar(MODID);
-        registrar.playToServer(EncodeWithRecipeIdC2SPacket.TYPE, EncodeWithRecipeIdC2SPacket.STREAM_CODEC, EncodeWithRecipeIdC2SPacket::handle);
+        registrar.playToServer(EncodeWithCategoryIdC2SPacket.TYPE, EncodeWithCategoryIdC2SPacket.STREAM_CODEC, EncodeWithCategoryIdC2SPacket::handle);
         registrar.playToServer(UploadInventoryPatternsToProvidersC2SPacket.TYPE, UploadInventoryPatternsToProvidersC2SPacket.STREAM_CODEC, UploadInventoryPatternsToProvidersC2SPacket::handle);
+        registrar.playToServer(UploadCategoryWorkstationsC2SPacket.TYPE, UploadCategoryWorkstationsC2SPacket.STREAM_CODEC, UploadCategoryWorkstationsC2SPacket::handle);
     }
 }

@@ -4,7 +4,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public interface IPatternEncodingIdSync {
     /**
-     * 由客户端发送的编码指令附带的 recipe id。
+     * 由客户端发送的编码指令附带的 CategoryId。
      */
-    void eap$clientRecipeIdUpload(ResourceLocation id);
+    void eap$clientCategoryIdUpload(ResourceLocation id);
 }

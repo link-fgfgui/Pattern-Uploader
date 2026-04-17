@@ -2,19 +2,21 @@ package io.github.linkfgfgui.pattern_uploader.utils;
 
 import appeng.api.crafting.IPatternDetails;
 import appeng.api.crafting.PatternDetailsHelper;
+import appeng.api.stacks.AEItemKey;
 import appeng.api.stacks.GenericStack;
 import io.github.linkfgfgui.pattern_uploader.PatternUploader;
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
 import mezz.jei.api.recipe.IRecipeManager;
 import mezz.jei.api.recipe.RecipeType;
-import mezz.jei.api.recipe.category.IRecipeCategory;
 import mezz.jei.api.runtime.IJeiRuntime;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
@@ -29,15 +31,31 @@ import java.util.Optional;
 @JeiPlugin
 public final class RecipeFinderUtilJEI implements RecipeFinderUtil, IModPlugin {
 
-    static public RecipeManager manager = null;
     static public IRecipeManager iRecipeManager = null;
 
     @Nullable
+    private static RecipeManager getRecipeManager() {
+        if (Minecraft.getInstance().level != null) {
+            return Minecraft.getInstance().level.getRecipeManager();
+        } else if (Minecraft.getInstance().getConnection() != null) {
+            return Minecraft.getInstance().getConnection().getRecipeManager();
+        }
+        return null;
+    }
+
+    @Nullable
     public Recipe<?> findRecipeById(ResourceLocation location) {
+        RecipeManager manager = getRecipeManager();
         if (manager == null || iRecipeManager == null) return null;
         Optional<RecipeHolder<?>> recipe = manager.byKey(location);
         if (recipe.isEmpty()) return null;
         return recipe.get().value();
+    }
+
+    public @Nullable RecipeType<?> getRecipeCategoryByCategoryId(String id) {
+        if (id == null || iRecipeManager == null) return null;
+        ResourceLocation uid = ResourceLocation.parse(id);
+        return iRecipeManager.getRecipeType(uid).orElse(null);
     }
 
     public @Nullable RecipeType<?> getRecipeCategoryByRecipeId(ResourceLocation id) {
@@ -45,27 +63,16 @@ public final class RecipeFinderUtilJEI implements RecipeFinderUtil, IModPlugin {
         if (recipe == null) {
             return null;
         }
-        for (IRecipeCategory<?> category : iRecipeManager.createRecipeCategoryLookup().get().toList()) {
-            RecipeType<?> type = category.getRecipeType();
-            if (type.getUid().toString().equals(recipe.getType().toString())) {
-                return type;
-            }
-        }
-        return null;
+        ResourceLocation typeId = BuiltInRegistries.RECIPE_TYPE.getKey(recipe.getType());
+        if (typeId == null) return null;
+
+        return getRecipeCategoryByCategoryId(typeId.toString());
     }
 
     @Override
-    public @Nullable ResourceLocation getRecipeCategoryIdByRecipeId(ResourceLocation id) {
-        RecipeType<?> recipeType = getRecipeCategoryByRecipeId(id);
-        if (recipeType != null) {
-            return recipeType.getUid();
-        }
-        return null;
-    }
-
-    @Override
-    public @Nullable List<ResourceLocation> getWorkstationIdsByRecipeId(String id) {
-        var workstations = getWorkstationsByRecipeId(id);
+    public @Nullable List<ResourceLocation> getWorkstationIdsByCategoryId(ResourceLocation id) {
+        RecipeType<?> recipeCategory = getRecipeCategoryByCategoryId(id.toString());
+        List<ItemStack> workstations = getWorkstationsByCategory(recipeCategory, false);
         if (workstations == null) return null;
         return workstations
                 .stream()
@@ -77,8 +84,7 @@ public final class RecipeFinderUtilJEI implements RecipeFinderUtil, IModPlugin {
         return getWorkstationsByRecipeId(id, false);
     }
 
-    public @Nullable List<ItemStack> getWorkstationsByRecipeId(String id, boolean once) {
-        RecipeType<?> category = getRecipeCategoryByRecipeId(ResourceLocation.parse(id));
+    public @Nullable List<ItemStack> getWorkstationsByCategory(RecipeType<?> category, boolean once) {
         if (category != null) {
             var stream = iRecipeManager
                     .createRecipeCatalystLookup(category)
@@ -95,10 +101,15 @@ public final class RecipeFinderUtilJEI implements RecipeFinderUtil, IModPlugin {
         return null;
     }
 
+    public @Nullable List<ItemStack> getWorkstationsByRecipeId(String id, boolean once) {
+        RecipeType<?> category = getRecipeCategoryByRecipeId(ResourceLocation.parse(id));
+        return getWorkstationsByCategory(category, once);
+    }
+
     @Override
-    public @Nullable Component getWorkstationComponentByRecipeId(String id) {
-        List<ItemStack> workstation = getWorkstationsByRecipeId(id, true);
-        if (workstation != null) {
+    public @Nullable Component getWorkstationComponentByCategoryId(String id) {
+        List<ItemStack> workstation = getWorkstationsByCategory(getRecipeCategoryByCategoryId(id), true);
+        if (workstation != null && !workstation.isEmpty()) {
             return Component.translatable(workstation.getFirst().getItem().getDescriptionId());
         }
         return null;
@@ -113,12 +124,15 @@ public final class RecipeFinderUtilJEI implements RecipeFinderUtil, IModPlugin {
         if (pattern != null) {
             List<GenericStack> stacks = pattern.getOutputs();
             if (stacks != null && recipe != null) {
-                return pattern.getPrimaryOutput().what().getId()
-                        .equals(
-                                recipe.getResultItem(registries)
-                                        .getItemHolder()
-                                        .unwrapKey()
-                                        .map(ResourceKey::location).orElse(null));
+                GenericStack primaryOutput = pattern.getPrimaryOutput();
+                if (primaryOutput != null) {
+                    if (primaryOutput.what() instanceof AEItemKey aeItemKey) {
+                        Item patternItem = aeItemKey.getItem();
+                        Item recipeItem = recipe.getResultItem(registries).getItem();
+                        return patternItem.equals(recipeItem);
+                    }
+                }
+                return false;
             }
         }
         return false;
@@ -136,7 +150,6 @@ public final class RecipeFinderUtilJEI implements RecipeFinderUtil, IModPlugin {
 
     @Override
     public void onRuntimeAvailable(@NotNull IJeiRuntime jeiRuntime) {
-        manager = Minecraft.getInstance().level.getRecipeManager();
         iRecipeManager = jeiRuntime.getRecipeManager();
     }
 }

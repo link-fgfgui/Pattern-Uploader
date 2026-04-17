@@ -9,17 +9,12 @@ import java.util.List;
 
 public class RecipeFinderUtilREI implements RecipeFinderUtil {
     @Override
-    public @Nullable ResourceLocation getRecipeCategoryIdByRecipeId(ResourceLocation id) {
+    public @Nullable List<ResourceLocation> getWorkstationIdsByCategoryId(ResourceLocation id) {
         return null;
     }
 
     @Override
-    public @Nullable List<ResourceLocation> getWorkstationIdsByRecipeId(String id) {
-        return null;
-    }
-
-    @Override
-    public @Nullable Component getWorkstationComponentByRecipeId(String id) {
+    public @Nullable Component getWorkstationComponentByCategoryId(String id) {
         return null;
     }
 

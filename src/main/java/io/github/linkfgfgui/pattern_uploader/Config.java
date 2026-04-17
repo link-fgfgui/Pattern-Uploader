@@ -21,9 +21,5 @@ public class Config {
                     }
             );
 
-    public static final ModConfigSpec.BooleanValue IS_CHECK_PATTERN_OUTPUT = BUILDER.define("isCheckPatternOutput", true);
-
-
-
     static final ModConfigSpec SPEC = BUILDER.build();
 }
