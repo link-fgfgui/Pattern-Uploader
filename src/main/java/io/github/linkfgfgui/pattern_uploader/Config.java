@@ -1,6 +1,6 @@
 package io.github.linkfgfgui.pattern_uploader;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.neoforged.neoforge.common.ModConfigSpec;
 
 import java.util.List;
@@ -15,7 +15,7 @@ public class Config {
                     () -> "minecraft:campfire_cooking",
                     obj -> {
                         if (obj instanceof String s) {
-                            return ResourceLocation.tryParse(s) != null;
+                            return Identifier.tryParse(s) != null;
                         }
                         return false;
                     }

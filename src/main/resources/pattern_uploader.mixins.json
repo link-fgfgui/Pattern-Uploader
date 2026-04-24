@@ -10,7 +10,6 @@
   "client": [
     "EncodedPatternItemMixin",
     "PatternEncodingTermMenuClientMixin",
-    "emi.EmiRecipeFillerMixin",
     "jei.RecipeTransferUtilMixin"
   ],
   "injectors": {
