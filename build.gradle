@@ -46,6 +46,9 @@ repositories {
     maven {
         url "https://cursemaven.com"
     }
+    flatDir {
+        dir 'libs'
+    }
 }
 
 base {
@@ -131,11 +134,15 @@ configurations {
 }
 
 dependencies {
-    jarJar(implementation(files("libs/recipesync-1.0.0.jar")))
+    jarJar(implementation(group: 'blank', name: 'recipesync')) {
+        version {
+            prefer '1.0.0'
+        }
+    }
 //    compileOnly "dev.emi:emi-neoforge:${emi_version}"
     compileOnly "mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}"
 //    compileOnly "me.shedaniel:RoughlyEnoughItems-neoforge:${rei_version}"
-    implementation files("libs/ae2.jar")
+    implementation "blank:ae2"
 
 //    runtimeOnly "dev.emi:emi-neoforge:${emi_version}"
     localRuntime "mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}"
