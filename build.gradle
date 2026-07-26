@@ -46,8 +46,9 @@ repositories {
     maven {
         url "https://cursemaven.com"
     }
-    flatDir {
-        dir 'libs'
+    maven {
+        name = "Modrinth"
+        url = "https://api.modrinth.com/maven"
     }
 }
 
@@ -134,15 +135,16 @@ configurations {
 }
 
 dependencies {
-    jarJar(implementation(group: 'blank', name: 'recipesync')) {
+    jarJar(implementation("maven.modrinth:recipesync:[${recipesync_version},2.0.0)")) {
         version {
-            prefer '1.0.0'
+            prefer "${recipesync_version}"
         }
     }
 //    compileOnly "dev.emi:emi-neoforge:${emi_version}"
     compileOnly "mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}"
 //    compileOnly "me.shedaniel:RoughlyEnoughItems-neoforge:${rei_version}"
-    implementation "blank:ae2"
+    compileOnly "org.appliedenergistics:appliedenergistics2:${ae2_version}"
+    localRuntime "org.appliedenergistics:appliedenergistics2:${ae2_version}"
 
 //    runtimeOnly "dev.emi:emi-neoforge:${emi_version}"
     localRuntime "mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}"
